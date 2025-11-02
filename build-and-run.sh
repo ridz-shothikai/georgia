@@ -93,7 +93,7 @@ check_health() {
     local service=$1
     local max_attempts=20
     local attempt=0
-    
+
     while [ $attempt -lt $max_attempts ]; do
         if docker compose ps | grep -q "$service.*healthy\|Up"; then
             echo -e "${GREEN}✓ $service is healthy${NC}"
@@ -103,7 +103,7 @@ check_health() {
         echo -n "."
         sleep 3
     done
-    
+
     echo -e "${RED}✗ $service failed to become healthy${NC}"
     return 1
 }
@@ -127,7 +127,7 @@ print_header "Step 6: Checking endpoints"
 test_endpoint() {
     local name=$1
     local url=$2
-    
+
     echo -n "Testing $name... "
     if curl -s -o /dev/null -w "%{http_code}" "$url" | grep -q "200"; then
         echo -e "${GREEN}✓ OK${NC}"
@@ -139,9 +139,9 @@ test_endpoint() {
 sleep 5
 
 test_endpoint "Backend API" "http://localhost:3000/api/health"
-test_endpoint "App1" "http://localhost:3000/app1"
-test_endpoint "App2" "http://localhost:3000/app2"
-test_endpoint "Admin Dashboard" "http://localhost:3000/admin-dashboard"
+test_endpoint "Region14" "http://localhost:3000/region14"
+test_endpoint "Region2" "http://localhost:3000/region2"
+test_endpoint "Dashboard" "http://localhost:3000/dashboard"
 
 echo ""
 print_header "Deployment Complete!"

@@ -85,12 +85,7 @@ export default function AdminDashboard() {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="">
-          <a href="/login" className="text-blue-600 hover:text-blue-800">Please login</a>
-        </div>
-      </div>)
+    return router.replace("/login");
   }
 
   const tabs = [

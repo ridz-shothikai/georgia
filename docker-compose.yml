@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   # MongoDB Database
   mongodb:
@@ -42,19 +44,19 @@ services:
     networks:
       - platform-network
 
-  # App1 Frontend
-  app1:
+  # Region14 Frontend (was app1)
+  region14:
     build:
       context: ./app1
       dockerfile: Dockerfile
-    container_name: platform-app1
+    container_name: platform-region14
     restart: unless-stopped
     ports:
       - "3001:3000"
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: /api
-      NEXT_PUBLIC_APP_NAME: app1
+      NEXT_PUBLIC_APP_NAME: region14
     depends_on:
       - backend
     volumes:
@@ -66,19 +68,19 @@ services:
     networks:
       - platform-network
 
-  # App2 Frontend
-  app2:
+  # Region2 Frontend (was app2)
+  region2:
     build:
       context: ./app2
       dockerfile: Dockerfile
-    container_name: platform-app2
+    container_name: platform-region2
     restart: unless-stopped
     ports:
       - "3002:3000"
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: /api
-      NEXT_PUBLIC_APP_NAME: app2
+      NEXT_PUBLIC_APP_NAME: region2
     depends_on:
       - backend
     volumes:
@@ -90,19 +92,19 @@ services:
     networks:
       - platform-network
 
-  # Admin Dashboard Frontend
-  admin-dashboard:
+  # Dashboard Frontend (was admin-dashboard)
+  dashboard:
     build:
       context: ./admin-dashboard
       dockerfile: Dockerfile
-    container_name: platform-admin
+    container_name: platform-dashboard
     restart: unless-stopped
     ports:
       - "3003:3000"
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: /api
-      NEXT_PUBLIC_APP_NAME: admin-dashboard
+      NEXT_PUBLIC_APP_NAME: dashboard
       NEXT_PUBLIC_ADMIN_EMAIL: admin@platform.com
       NEXT_PUBLIC_ADMIN_PASSWORD: change-this-password
     depends_on:
@@ -125,13 +127,12 @@ services:
       - "3000:3000"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      # Uncomment the line below if you have SSL certificates
       # - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - backend
-      - app1
-      - app2
-      - admin-dashboard
+      - region14
+      - region2
+      - dashboard
     networks:
       - platform-network
 
