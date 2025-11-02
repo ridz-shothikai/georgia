@@ -3,17 +3,17 @@
  * Handles authentication-related HTTP requests
  */
 
-import { Request, Response } from 'express';
-import { 
-  loginUser, 
-  logoutUser, 
-  registerUser, 
-  verifyToken, 
+import { Request, Response } from "express";
+import {
+  loginUser,
+  logoutUser,
+  registerUser,
+  verifyToken,
   refreshAccessToken,
-  logoutAllSessions 
-} from '../services/auth.service';
-import { logger } from '../utils/logger';
-import { AuditLog } from '../models';
+  logoutAllSessions,
+} from "../services/auth.service";
+import { logger } from "../utils/logger";
+import { AuditLog } from "../models";
 
 /**
  * Login endpoint
@@ -27,14 +27,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (!email || !password) {
       res.status(400).json({
         success: false,
-        message: 'Email and password are required'
+        message: "Email and password are required",
       });
       return;
     }
 
     // Get client info
     const ipAddress = req.ip;
-    const userAgent = req.get('User-Agent');
+    const userAgent = req.get("User-Agent");
 
     // Attempt login
     const result = await loginUser({ email, password }, ipAddress, userAgent);
@@ -43,32 +43,32 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     if (result.success && result.tokens) {
       // Set HTTP-only cookies
-      res.cookie('auth_token', result.tokens.accessToken, {
+      res.cookie("auth_token", result.tokens.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
-      res.cookie('refresh_token', result.tokens.refreshToken, {
+      res.cookie("refresh_token", result.tokens.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
       // Log API call
       await AuditLog.create({
         userId: result.user?.id,
-        action: 'login',
-        level: 'info',
-        message: 'Login API call successful',
-        details: { endpoint: '/api/auth/login' },
+        action: "login",
+        level: "info",
+        message: "Login API call successful",
+        details: { endpoint: "/api/auth/login" },
         ipAddress,
         userAgent,
-        endpoint: '/api/auth/login',
-        method: 'POST',
-        statusCode: 200
+        endpoint: "/api/auth/login",
+        method: "POST",
+        statusCode: 200,
       });
 
       res.status(200).json({
@@ -78,57 +78,56 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           user: result.user,
           tokens: {
             accessToken: result.tokens.accessToken,
-            refreshToken: result.tokens.refreshToken
-          }
-        }
+            refreshToken: result.tokens.refreshToken,
+          },
+        },
       });
     } else {
       // Log failed login attempt
       await AuditLog.create({
-        action: 'login',
-        level: 'warn',
-        message: 'Login API call failed',
-        details: { 
-          endpoint: '/api/auth/login',
+        action: "login",
+        level: "warn",
+        message: "Login API call failed",
+        details: {
+          endpoint: "/api/auth/login",
           reason: result.message,
-          email 
+          email,
         },
         ipAddress,
         userAgent,
-        endpoint: '/api/auth/login',
-        method: 'POST',
-        statusCode: 401
+        endpoint: "/api/auth/login",
+        method: "POST",
+        statusCode: 401,
       });
 
       res.status(401).json({
         success: false,
-        message: result.message
+        message: result.message,
       });
     }
-
   } catch (error) {
-    console.log(error)
-    logger.error('Login controller error:', error);
+    console.log(error);
+    logger.error("Login controller error:", error);
 
     // Log API error
     await AuditLog.create({
-      action: 'login',
-      level: 'error',
-      message: 'Login API error',
-      details: { 
+      action: "login",
+      level: "error",
+      message: "Login API error",
+      details: {
         error: (error as Error).message,
-        endpoint: '/api/auth/login'
+        endpoint: "/api/auth/login",
       },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      endpoint: '/api/auth/login',
-      method: 'POST',
-      statusCode: 500
+      userAgent: req.get("User-Agent"),
+      endpoint: "/api/auth/login",
+      method: "POST",
+      statusCode: 500,
     });
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -140,71 +139,72 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     // Get token from cookies or headers
-    const token = req.cookies?.auth_token || 
-                  (req.headers.authorization?.startsWith('Bearer ') ? 
-                   req.headers.authorization.substring(7) : null);
+    const token =
+      req.cookies?.auth_token ||
+      (req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.substring(7)
+        : null);
 
     if (!token) {
       res.status(400).json({
         success: false,
-        message: 'No active session found'
+        message: "No active session found",
       });
       return;
     }
 
     // Get client info
     const ipAddress = req.ip;
-    const userAgent = req.get('User-Agent');
+    const userAgent = req.get("User-Agent");
 
     // Attempt logout
     const result = await logoutUser(token, ipAddress, userAgent);
 
     // Clear cookies
-    res.clearCookie('auth_token');
-    res.clearCookie('refresh_token');
+    res.clearCookie("auth_token");
+    res.clearCookie("refresh_token");
 
     // Log API call
     await AuditLog.create({
       userId: req.user?.userId,
-      action: 'logout',
-      level: 'info',
-      message: 'Logout API call',
-      details: { 
-        endpoint: '/api/auth/logout',
-        success: result.success
+      action: "logout",
+      level: "info",
+      message: "Logout API call",
+      details: {
+        endpoint: "/api/auth/logout",
+        success: result.success,
       },
       ipAddress,
       userAgent,
-      endpoint: '/api/auth/logout',
-      method: 'POST',
-      statusCode: result.success ? 200 : 400
+      endpoint: "/api/auth/logout",
+      method: "POST",
+      statusCode: result.success ? 200 : 400,
     });
 
     res.status(result.success ? 200 : 400).json(result);
-
   } catch (error) {
-    logger.error('Logout controller error:', error);
+    logger.error("Logout controller error:", error);
 
     // Log API error
     await AuditLog.create({
       userId: req.user?.userId,
-      action: 'logout',
-      level: 'error',
-      message: 'Logout API error',
-      details: { 
+      action: "logout",
+      level: "error",
+      message: "Logout API error",
+      details: {
         error: (error as Error).message,
-        endpoint: '/api/auth/logout'
+        endpoint: "/api/auth/logout",
       },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      endpoint: '/api/auth/logout',
-      method: 'POST',
-      statusCode: 500
+      userAgent: req.get("User-Agent"),
+      endpoint: "/api/auth/logout",
+      method: "POST",
+      statusCode: 500,
     });
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -215,13 +215,14 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
  */
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, role, assignedApps } = req.body;
+    const { email, password, firstName, lastName, role, assignedApps } =
+      req.body;
 
     // Validate input
     if (!email || !password) {
       res.status(400).json({
         success: false,
-        message: 'Email and password are required'
+        message: "Email and password are required",
       });
       return;
     }
@@ -231,7 +232,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     if (!emailRegex.test(email)) {
       res.status(400).json({
         success: false,
-        message: 'Invalid email format'
+        message: "Invalid email format",
       });
       return;
     }
@@ -240,128 +241,133 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     if (password.length < 6) {
       res.status(400).json({
         success: false,
-        message: 'Password must be at least 6 characters long'
+        message: "Password must be at least 6 characters long",
       });
       return;
     }
 
     // Get client info
     const ipAddress = req.ip;
-    const userAgent = req.get('User-Agent');
+    const userAgent = req.get("User-Agent");
 
     // Attempt registration
-    const result = await registerUser({
-      email,
-      password,
-      firstName,
-      lastName,
-      role,
-      assignedApps
-    }, ipAddress, userAgent);
+    const result = await registerUser(
+      {
+        email,
+        password,
+        firstName,
+        lastName,
+        role,
+        assignedApps,
+      },
+      ipAddress,
+      userAgent
+    );
 
     if (result.success && result.tokens) {
       // Set HTTP-only cookies
-      res.cookie('auth_token', result.tokens.accessToken, {
+      res.cookie("auth_token", result.tokens.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
-      res.cookie('refresh_token', result.tokens.refreshToken, {
+      res.cookie("refresh_token", result.tokens.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
       // Log API call
       await AuditLog.create({
         userId: result.user?.id,
-        action: 'register',
-        level: 'info',
-        message: 'Registration API call successful',
-        details: { 
-          endpoint: '/api/auth/register',
-          role: result.user?.role
+        action: "register",
+        level: "info",
+        message: "Registration API call successful",
+        details: {
+          endpoint: "/api/auth/register",
+          role: result.user?.role,
         },
         ipAddress,
         userAgent,
-        endpoint: '/api/auth/register',
-        method: 'POST',
-        statusCode: 201
+        endpoint: "/api/auth/register",
+        method: "POST",
+        statusCode: 201,
       });
 
       res.status(201).json({
         success: true,
         message: result.message,
-        user: result.user
+        user: result.user,
       });
     } else {
       // Log failed registration
       await AuditLog.create({
-        action: 'register',
-        level: 'warn',
-        message: 'Registration API call failed',
-        details: { 
-          endpoint: '/api/auth/register',
+        action: "register",
+        level: "warn",
+        message: "Registration API call failed",
+        details: {
+          endpoint: "/api/auth/register",
           reason: result.message,
-          email 
+          email,
         },
         ipAddress,
         userAgent,
-        endpoint: '/api/auth/register',
-        method: 'POST',
-        statusCode: 400
+        endpoint: "/api/auth/register",
+        method: "POST",
+        statusCode: 400,
       });
 
       res.status(400).json({
         success: false,
-        message: result.message
+        message: result.message,
       });
     }
-
   } catch (error) {
-    logger.error('Register controller error:', error);
+    logger.error("Register controller error:", error);
 
     // Log API error
     await AuditLog.create({
-      action: 'register',
-      level: 'error',
-      message: 'Registration API error',
-      details: { 
+      action: "register",
+      level: "error",
+      message: "Registration API error",
+      details: {
         error: (error as Error).message,
-        endpoint: '/api/auth/register'
+        endpoint: "/api/auth/register",
       },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      endpoint: '/api/auth/register',
-      method: 'POST',
-      statusCode: 500
+      userAgent: req.get("User-Agent"),
+      endpoint: "/api/auth/register",
+      method: "POST",
+      statusCode: 500,
     });
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
 
 /**
  * Verify token endpoint
- * GET /api/auth/verify
+ * GET /auth/verify
  */
 export const verify = async (req: Request, res: Response): Promise<void> => {
   try {
     // Get token from cookies or headers
-    const token = req.cookies?.auth_token || 
-                  (req.headers.authorization?.startsWith('Bearer ') ? 
-                   req.headers.authorization.substring(7) : null);
+    const token =
+      req.cookies?.auth_token ||
+      (req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.substring(7)
+        : null);
 
     if (!token) {
       res.status(401).json({
         success: false,
-        message: 'No token provided'
+        message: "No token provided",
       });
       return;
     }
@@ -369,69 +375,67 @@ export const verify = async (req: Request, res: Response): Promise<void> => {
     // Verify token
     const result = await verifyToken(token);
 
-    console.log("Topken", result)
-
+    console.log("Topken", result);
 
     // Log API call
     await AuditLog.create({
       userId: result.valid ? result.payload?.userId : undefined,
-      action: 'api_call',
-      level: result.valid ? 'info' : 'warn',
-      message: `Token verification ${result.valid ? 'successful' : 'failed'}`,
-      details: { 
-        endpoint: '/api/auth/verify',
+      action: "api_call",
+      level: result.valid ? "info" : "warn",
+      message: `Token verification ${result.valid ? "successful" : "failed"}`,
+      details: {
+        endpoint: "/auth/verify",
         valid: result.valid,
-        error: result.error
+        error: result.error,
       },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      endpoint: '/api/auth/verify',
-      method: 'GET',
-      statusCode: result.valid ? 200 : 401
+      userAgent: req.get("User-Agent"),
+      endpoint: "/auth/verify",
+      method: "GET",
+      statusCode: result.valid ? 200 : 401,
     });
 
     if (result.valid) {
       res.status(200).json({
         success: true,
-        message: 'Token is valid',
+        message: "Token is valid",
         data: {
           user: {
             id: result.payload?.userId,
             email: result.payload?.email,
             role: result.payload?.role,
-            appAccess: result.payload?.appAccess
-          }
-        }
+            appAccess: result.payload?.appAccess,
+          },
+        },
       });
     } else {
       res.status(401).json({
         success: false,
-        message: result.error || 'Token verification failed'
+        message: result.error || "Token verification failed",
       });
     }
-
   } catch (error) {
-    logger.error('Verify controller error:', error);
+    logger.error("Verify controller error:", error);
 
     // Log API error
     await AuditLog.create({
-      action: 'api_call',
-      level: 'error',
-      message: 'Token verification API error',
-      details: { 
+      action: "api_call",
+      level: "error",
+      message: "Token verification API error",
+      details: {
         error: (error as Error).message,
-        endpoint: '/api/auth/verify'
+        endpoint: "/auth/verify",
       },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      endpoint: '/api/auth/verify',
-      method: 'GET',
-      statusCode: 500
+      userAgent: req.get("User-Agent"),
+      endpoint: "/auth/verify",
+      method: "GET",
+      statusCode: 500,
     });
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -448,98 +452,97 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
     if (!refreshToken) {
       res.status(401).json({
         success: false,
-        message: 'No refresh token provided'
+        message: "No refresh token provided",
       });
       return;
     }
 
     // Get client info
     const ipAddress = req.ip;
-    const userAgent = req.get('User-Agent');
+    const userAgent = req.get("User-Agent");
 
     // Attempt token refresh
     const result = await refreshAccessToken(refreshToken, ipAddress, userAgent);
 
     if (result.success && result.tokens) {
       // Set new HTTP-only cookies
-      res.cookie('auth_token', result.tokens.accessToken, {
+      res.cookie("auth_token", result.tokens.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
-      res.cookie('refresh_token', result.tokens.refreshToken, {
+      res.cookie("refresh_token", result.tokens.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
       // Log API call
       await AuditLog.create({
         userId: result.user?.id,
-        action: 'refresh_token',
-        level: 'info',
-        message: 'Token refresh API call successful',
-        details: { endpoint: '/api/auth/refresh' },
+        action: "refresh_token",
+        level: "info",
+        message: "Token refresh API call successful",
+        details: { endpoint: "/auth/refresh" },
         ipAddress,
         userAgent,
-        endpoint: '/api/auth/refresh',
-        method: 'POST',
-        statusCode: 200
+        endpoint: "/auth/refresh",
+        method: "POST",
+        statusCode: 200,
       });
 
       res.status(200).json({
         success: true,
         message: result.message,
-        user: result.user
+        user: result.user,
       });
     } else {
       // Log failed refresh
       await AuditLog.create({
-        action: 'refresh_token',
-        level: 'warn',
-        message: 'Token refresh API call failed',
-        details: { 
-          endpoint: '/api/auth/refresh',
-          reason: result.message
+        action: "refresh_token",
+        level: "warn",
+        message: "Token refresh API call failed",
+        details: {
+          endpoint: "/api/auth/refresh",
+          reason: result.message,
         },
         ipAddress,
         userAgent,
-        endpoint: '/api/auth/refresh',
-        method: 'POST',
-        statusCode: 401
+        endpoint: "/api/auth/refresh",
+        method: "POST",
+        statusCode: 401,
       });
 
       res.status(401).json({
         success: false,
-        message: result.message
+        message: result.message,
       });
     }
-
   } catch (error) {
-    logger.error('Refresh controller error:', error);
+    logger.error("Refresh controller error:", error);
 
     // Log API error
     await AuditLog.create({
-      action: 'refresh_token',
-      level: 'error',
-      message: 'Token refresh API error',
-      details: { 
+      action: "refresh_token",
+      level: "error",
+      message: "Token refresh API error",
+      details: {
         error: (error as Error).message,
-        endpoint: '/api/auth/refresh'
+        endpoint: "/api/auth/refresh",
       },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      endpoint: '/api/auth/refresh',
-      method: 'POST',
-      statusCode: 500
+      userAgent: req.get("User-Agent"),
+      endpoint: "/api/auth/refresh",
+      method: "POST",
+      statusCode: 500,
     });
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -553,64 +556,67 @@ export const logoutAll = async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
       res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
       return;
     }
 
     // Get client info
     const ipAddress = req.ip;
-    const userAgent = req.get('User-Agent');
+    const userAgent = req.get("User-Agent");
 
     // Logout all sessions
-    const result = await logoutAllSessions(req.user.userId, ipAddress, userAgent);
+    const result = await logoutAllSessions(
+      req.user.userId,
+      ipAddress,
+      userAgent
+    );
 
     // Clear cookies
-    res.clearCookie('auth_token');
-    res.clearCookie('refresh_token');
+    res.clearCookie("auth_token");
+    res.clearCookie("refresh_token");
 
     // Log API call
     await AuditLog.create({
       userId: req.user.userId,
-      action: 'logout_all',
-      level: 'info',
-      message: 'Logout all sessions API call',
-      details: { 
-        endpoint: '/api/auth/logout-all',
-        success: result.success
+      action: "logout_all",
+      level: "info",
+      message: "Logout all sessions API call",
+      details: {
+        endpoint: "/api/auth/logout-all",
+        success: result.success,
       },
       ipAddress,
       userAgent,
-      endpoint: '/api/auth/logout-all',
-      method: 'POST',
-      statusCode: result.success ? 200 : 400
+      endpoint: "/api/auth/logout-all",
+      method: "POST",
+      statusCode: result.success ? 200 : 400,
     });
 
     res.status(result.success ? 200 : 400).json(result);
-
   } catch (error) {
-    logger.error('Logout all controller error:', error);
+    logger.error("Logout all controller error:", error);
 
     // Log API error
     await AuditLog.create({
       userId: req.user?.userId,
-      action: 'logout_all',
-      level: 'error',
-      message: 'Logout all sessions API error',
-      details: { 
+      action: "logout_all",
+      level: "error",
+      message: "Logout all sessions API error",
+      details: {
         error: (error as Error).message,
-        endpoint: '/api/auth/logout-all'
+        endpoint: "/api/auth/logout-all",
       },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      endpoint: '/api/auth/logout-all',
-      method: 'POST',
-      statusCode: 500
+      userAgent: req.get("User-Agent"),
+      endpoint: "/api/auth/logout-all",
+      method: "POST",
+      statusCode: 500,
     });
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };

@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (response.success && response.data?.user) {
           console.log(
             "AuthProvider: Token verification successful, setting user:",
-            response.data.user,
+            response.data.user
           );
           setUser(response.data.user);
           saveUserToStorage(response.data.user);
@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearUserFromStorage();
       } finally {
         console.log(
-          "AuthProvider: Auth initialization complete, setting loading to false",
+          "AuthProvider: Auth initialization complete, setting loading to false"
         );
         setIsLoading(false);
       }
@@ -130,6 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
+      // localStorage.removeItem("access_token");
+      // localStorage.removeItem("refresh_token");
       await authApi.logout();
       setUser(null);
       clearUserFromStorage();

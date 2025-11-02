@@ -197,7 +197,7 @@ export class AuthApiClient {
       throw new Error("No access token available");
     }
 
-    const response = await fetch(`${this.baseURL}/api/auth/verify`, {
+    const response = await fetch(`${this.baseURL}/auth/verify`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -329,7 +329,7 @@ export class ServerAuth {
     apiUrl: string
   ): Promise<User | null> {
     try {
-      const response = await fetch(`${apiUrl}/api/auth/verify`, {
+      const response = await fetch(`${apiUrl}/auth/verify`, {
         method: "GET",
         headers: {
           Cookie: `auth_token=${token}`,

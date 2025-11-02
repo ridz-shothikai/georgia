@@ -1,24 +1,29 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/immutability */
+"use client";
 
 /**
  * App2 Main Page
  * Dashboard for Application 2 of the Unified Multi-App Platform
  */
 
-import { useAuth } from '../contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useAuth } from "../contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function App2Dashboard() {
-  const { user, isLoading, logout } = useAuth();
+  const { user: userData, isLoading, logout } = useAuth();
   const router = useRouter();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentApp, setCurrentApp] = useState("region2");
 
+  const user: any = userData?.user || userData;
 
-    // get and save access_token from local storage to state
-  const [accessToken, setAccessToken] = useState('');
+  // get and save access_token from local storage to state
+  const [accessToken, setAccessToken] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (token) {
       setAccessToken(token);
     }
@@ -29,7 +34,8 @@ export default function App2Dashboard() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('http://localhost:3000/login');
+    localStorage.clear();
+    window.location.href = "http://localhost:3000/login";
   };
 
   if (isLoading) {
@@ -40,24 +46,21 @@ export default function App2Dashboard() {
     );
   }
 
-  if(!user){
-    return <>
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <p className="text-2xl font-bold text-black mb-4">
-            You need to login first.
-          </p>
-          <button
-            onClick={() => window.location.href = 'http://localhost:3000/login'}
-            className="px-6 py-3 text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-          >
-            Login
-          </button>
-        </div>
-      </div>
-    </>
+  if (!user) {
+    return router.replace("/login");
   }
 
+  const appConfig: any = {
+    dashboard: { name: "Dashboard", url: "/dashboard" },
+    region14: { name: "Region 14", url: "/region14" },
+    region2: { name: "Region 2", url: "/region2" },
+  };
+
+  const handleAppSwitch = (appId: any) => {
+    setCurrentApp(appId);
+    setIsDropdownOpen(false);
+    window.location.href = appConfig[appId].url;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,15 +68,64 @@ export default function App2Dashboard() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-gray-900">Region 2</h1>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  <span>{appConfig[currentApp].name}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                    <div className="py-1">
+                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                        Switch Application
+                      </div>
+                      {(user?.assignedApps || user?.appAccess)?.map(
+                        (appId: any) => (
+                          <button
+                            key={appId}
+                            onClick={() => handleAppSwitch(appId)}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${
+                              currentApp === appId
+                                ? "bg-blue-50 text-blue-700 font-medium"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {appConfig[appId].name}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-700">
-                Welcome, {parsedUser && parsedUser.user.email}
+                Welcome, {user?.email}
               </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {parsedUser && parsedUser.user.role}
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                {user?.role}
               </span>
               <button
                 onClick={handleLogout}
@@ -85,6 +137,13 @@ export default function App2Dashboard() {
           </div>
         </div>
       </header>
+
+      {isDropdownOpen && (
+        <div
+          className="fixed inset-0 z-0"
+          onClick={() => setIsDropdownOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -169,25 +228,33 @@ export default function App2Dashboard() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Feature 1</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Feature 1
+                    </h4>
                     <p className="text-sm text-gray-600">
                       This is a placeholder for App2 specific functionality.
                     </p>
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Feature 2</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Feature 2
+                    </h4>
                     <p className="text-sm text-gray-600">
                       Another feature specific to Application 2.
                     </p>
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Feature 3</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Feature 3
+                    </h4>
                     <p className="text-sm text-gray-600">
                       Additional functionality for App2 users.
                     </p>
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Feature 4</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Feature 4
+                    </h4>
                     <p className="text-sm text-gray-600">
                       More App2 specific features and capabilities.
                     </p>
@@ -198,25 +265,27 @@ export default function App2Dashboard() {
           </div>
 
           {/* Navigation Links */}
-        {parsedUser?.user?.role === 'superadmin' && (
-          <div className="mt-12 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Admin Access</h3>
-            <div className="space-x-4">
-              <a
-                href={`http://localhost:3001/?access=${accessToken}`}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-              >
-                Go to Region 14
-              </a>
-              <a
-                href="http://localhost:3000"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
-              >
-                Admin Dashboard
-              </a>
+          {parsedUser?.user?.role === "superadmin" && (
+            <div className="mt-12 text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Admin Access
+              </h3>
+              <div className="space-x-4">
+                <a
+                  href={`http://localhost:3001/?access=${accessToken}`}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                >
+                  Go to Region 14
+                </a>
+                <a
+                  href="http://localhost:3000"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+                >
+                  Admin Dashboard
+                </a>
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
       </main>
     </div>

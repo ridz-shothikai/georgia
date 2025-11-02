@@ -36,15 +36,10 @@ export default function UnifiedLogin() {
         if (user.role === "superadmin") {
           console.log("Redirecting superadmin to /");
           router.push("/");
-        } else if (user.assignedApps.includes("app1")) {
-          router.push(
-            "http://localhost:3001/access?access_token=" + access_token,
-          );
-        } else if (user.assignedApps.includes("app2")) {
-          router.push(
-            "http://localhost:3002/access?access_token=" +
-              localStorage.getItem("access_token"),
-          );
+        } else if (user.assignedApps.includes("region14")) {
+          window.location.href = `http://localhost:3000/region14/access?access_token=${access_token}`;
+        } else if (user.assignedApps.includes("region2")) {
+          window.location.href = `http://localhost:3000/region2/access?access_token=${access_token}`;
         } else {
           setError("No app access assigned. Please contact administrator.");
         }
@@ -58,9 +53,11 @@ export default function UnifiedLogin() {
     setError("");
 
     try {
-      const result: any = await login(email, password);
+      const { data: result }: any = await login(email, password);
+      console.log("🚀 ~ handleSubmit ~ result: outside", result);
 
-      if (result.success && result.user && result.tokens) {
+      if (result?.user && result?.tokens) {
+        console.log("🚀 ~ handleSubmit ~ result:", result);
         // Store tokens in localStorage
         try {
           localStorage.setItem("access_token", result.tokens.accessToken);
@@ -68,7 +65,7 @@ export default function UnifiedLogin() {
         } catch (storageError) {
           console.error(
             "Failed to store tokens in localStorage:",
-            storageError,
+            storageError
           );
           setError("Failed to store authentication tokens. Please try again.");
           return;
@@ -81,10 +78,10 @@ export default function UnifiedLogin() {
             break;
           case "user":
             // For regular users, redirect to their first assigned app
-            if (result.user.assignedApps.includes("app1")) {
-              router.push("/app1");
-            } else if (result.user.assignedApps.includes("app2")) {
-              router.push("/app2");
+            if (result.user.assignedApps.includes("region14")) {
+              router.push("/region14");
+            } else if (result.user.assignedApps.includes("region2")) {
+              router.push("/region2");
             } else {
               setError("No app access assigned. Please contact administrator.");
             }
@@ -94,7 +91,7 @@ export default function UnifiedLogin() {
         }
       } else {
         setError(
-          result.message || "Login failed. Please check your credentials.",
+          result.message || "Login failed. Please check your credentials."
         );
       }
     } catch (err) {

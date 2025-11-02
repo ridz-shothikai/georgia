@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
 /**
  * User Management Component
  * Comprehensive user management interface for admin dashboard
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface User {
   _id: string;
@@ -26,19 +26,23 @@ interface CreateUserForm {
 }
 
 const AVAILABLE_APPS = [
-  { id: 'app1', name: 'Application 1', url: 'http://localhost:3001' },
-  { id: 'app2', name: 'Application 2', url: 'http://localhost:3004' },
-  { id: 'admin-dashboard', name: 'Admin Dashboard', url: 'http://localhost:3003' },
+  { id: "region14", name: "Region 14", url: "http://localhost:3000/region14" },
+  { id: "region2", name: "Region 2", url: "http://localhost:3000/region2" },
+  {
+    id: "dashboard",
+    name: "Dashboard",
+    url: "http://localhost:3000/dashboard",
+  },
 ];
 
 const ROLES = [
-  { value: 'user', label: 'Regular User' },
-  { value: 'gadhs-it-staff', label: 'GADHS IT STAFF' },
-  { value: 'director', label: 'Director' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'clerk', label: 'Clerk' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'superadmin', label: 'Super Admin' },
+  { value: "user", label: "Regular User" },
+  { value: "gadhs-it-staff", label: "GADHS IT STAFF" },
+  { value: "director", label: "Director" },
+  { value: "manager", label: "Manager" },
+  { value: "clerk", label: "Clerk" },
+  { value: "admin", label: "Admin" },
+  { value: "superadmin", label: "Super Admin" },
 ];
 
 export default function UserManagement() {
@@ -46,15 +50,18 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('');
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const [createForm, setCreateForm] = useState<CreateUserForm>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'user',
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "user",
     assignedApps: [],
   });
 
@@ -75,22 +82,26 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:5005/api/admin/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/users`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        throw new Error("Failed to fetch users");
       }
 
       const data = await response.json();
       setUsers(data.data.users || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch users');
+      setError(err instanceof Error ? err.message : "Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -100,23 +111,23 @@ export default function UserManagement() {
     const errors: Partial<CreateUserForm> = {};
 
     if (!createForm.email) {
-      errors.email = 'Email is required';
+      errors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) {
-      errors.email = 'Invalid email format';
+      errors.email = "Invalid email format";
     }
 
     if (!createForm.password) {
-      errors.password = 'Password is required';
+      errors.password = "Password is required";
     } else if (createForm.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = "Password must be at least 6 characters";
     }
 
     if (createForm.password !== createForm.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = "Passwords do not match";
     }
 
     if (createForm.assignedApps.length === 0) {
-      errors.assignedApps = ['At least one app must be assigned'] as any;
+      errors.assignedApps = ["At least one app must be assigned"] as any;
     }
 
     setFormErrors(errors);
@@ -125,49 +136,56 @@ export default function UserManagement() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsCreating(true);
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:5005/api/admin/users', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: createForm.email,
-          password: createForm.password,
-          role: createForm.role,
-          assignedApps: createForm.assignedApps,
-        }),
-      });
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/users`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: createForm.email,
+            password: createForm.password,
+            role: createForm.role,
+            assignedApps: createForm.assignedApps,
+          }),
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create user');
+        throw new Error(errorData.message || "Failed to create user");
       }
 
       const data = await response.json();
-      setNotification({ type: 'success', message: 'User created successfully!' });
+      setNotification({
+        type: "success",
+        message: "User created successfully!",
+      });
       setShowCreateForm(false);
       setCreateForm({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: 'user',
+        email: "",
+        password: "",
+        confirmPassword: "",
+        role: "user",
         assignedApps: [],
       });
       setFormErrors({});
       fetchUsers(); // Refresh the user list
     } catch (err) {
-      setNotification({ 
-        type: 'error', 
-        message: err instanceof Error ? err.message : 'Failed to create user' 
+      setNotification({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to create user",
       });
     } finally {
       setIsCreating(false);
@@ -175,49 +193,60 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) {
+    if (!confirm("Are you sure you want to delete this user?")) {
       return;
     }
 
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost:5005/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to delete user');
+        throw new Error("Failed to delete user");
       }
 
-      setNotification({ type: 'success', message: 'User deleted successfully!' });
+      setNotification({
+        type: "success",
+        message: "User deleted successfully!",
+      });
       fetchUsers(); // Refresh the user list
     } catch (err) {
-      setNotification({ 
-        type: 'error', 
-        message: err instanceof Error ? err.message : 'Failed to delete user' 
+      setNotification({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to delete user",
       });
     }
   };
 
   const handleAppToggle = (appId: string) => {
-    setCreateForm(prev => ({
+    setCreateForm((prev) => ({
       ...prev,
       assignedApps: prev.assignedApps.includes(appId)
-        ? prev.assignedApps.filter(id => id !== appId)
-        : [...prev.assignedApps, appId]
+        ? prev.assignedApps.filter((id) => id !== appId)
+        : [...prev.assignedApps, appId],
     }));
   };
 
-  console.log("Users", users)
+  console.log("Users", users);
 
-  const filteredUsers = users && users.filter(user => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = !filterRole || user.role === filterRole;
-    return matchesSearch && matchesRole;
-  });
+  const filteredUsers =
+    users &&
+    users.filter((user) => {
+      const matchesSearch = user.email
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesRole = !filterRole || user.role === filterRole;
+      return matchesSearch && matchesRole;
+    });
 
   if (loading) {
     return (
@@ -232,12 +261,16 @@ export default function UserManagement() {
     <div className="space-y-6">
       {/* Notification */}
       {notification && (
-        <div className={`rounded-md p-4 ${
-          notification.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-        }`}>
+        <div
+          className={`rounded-md p-4 ${
+            notification.type === "success"
+              ? "bg-green-50 text-green-800"
+              : "bg-red-50 text-red-800"
+          }`}
+        >
           <div className="flex">
             <div className="flex-shrink-0">
-              {notification.type === 'success' ? (
+              {notification.type === "success" ? (
                 <span className="text-green-400">✓</span>
               ) : (
                 <span className="text-red-400">✗</span>
@@ -265,14 +298,16 @@ export default function UserManagement() {
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
         >
-          {showCreateForm ? 'Cancel' : 'Create New User'}
+          {showCreateForm ? "Cancel" : "Create New User"}
         </button>
       </div>
 
       {/* Create User Form */}
       {showCreateForm && (
         <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Create New User</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Create New User
+          </h3>
           <form onSubmit={handleCreateUser} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -282,14 +317,21 @@ export default function UserManagement() {
                 <input
                   type="email"
                   value={createForm.email}
-                  onChange={(e) => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500 ${
-                    formErrors.email ? 'border-red-500' : 'border-gray-300'
+                    formErrors.email ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="user@example.com"
                 />
                 {formErrors.email && (
-                  <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {formErrors.email}
+                  </p>
                 )}
               </div>
 
@@ -299,10 +341,12 @@ export default function UserManagement() {
                 </label>
                 <select
                   value={createForm.role}
-                  onChange={(e) => setCreateForm(prev => ({ ...prev, role: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({ ...prev, role: e.target.value }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                 >
-                  {ROLES.map(role => (
+                  {ROLES.map((role) => (
                     <option key={role.value} value={role.value}>
                       {role.label}
                     </option>
@@ -317,14 +361,21 @@ export default function UserManagement() {
                 <input
                   type="password"
                   value={createForm.password}
-                  onChange={(e) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500 ${
-                    formErrors.password ? 'border-red-500' : 'border-gray-300'
+                    formErrors.password ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Minimum 6 characters"
                 />
                 {formErrors.password && (
-                  <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {formErrors.password}
+                  </p>
                 )}
               </div>
 
@@ -335,14 +386,23 @@ export default function UserManagement() {
                 <input
                   type="password"
                   value={createForm.confirmPassword}
-                  onChange={(e) => setCreateForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500 ${
-                    formErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                    formErrors.confirmPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="Confirm password"
                 />
                 {formErrors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1">{formErrors.confirmPassword}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {formErrors.confirmPassword}
+                  </p>
                 )}
               </div>
             </div>
@@ -352,8 +412,11 @@ export default function UserManagement() {
                 Assigned Applications *
               </label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {AVAILABLE_APPS.map(app => (
-                  <label key={app.id} className="flex items-center space-x-2 cursor-pointer">
+                {AVAILABLE_APPS.map((app) => (
+                  <label
+                    key={app.id}
+                    className="flex items-center space-x-2 cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       checked={createForm.assignedApps.includes(app.id)}
@@ -365,7 +428,9 @@ export default function UserManagement() {
                 ))}
               </div>
               {formErrors.assignedApps && (
-                <p className="text-red-500 text-xs mt-1">{formErrors.assignedApps}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.assignedApps}
+                </p>
               )}
             </div>
 
@@ -382,7 +447,7 @@ export default function UserManagement() {
                 disabled={isCreating}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50"
               >
-                {isCreating ? 'Creating...' : 'Create User'}
+                {isCreating ? "Creating..." : "Create User"}
               </button>
             </div>
           </form>
@@ -408,7 +473,7 @@ export default function UserManagement() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
             >
               <option value="">All Roles</option>
-              {ROLES.map(role => (
+              {ROLES.map((role) => (
                 <option key={role.value} value={role.value}>
                   {role.label}
                 </option>
@@ -424,7 +489,7 @@ export default function UserManagement() {
           <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
             All Users ({filteredUsers.length})
           </h3>
-          
+
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
               <p className="text-red-800 text-sm">{error}</p>
@@ -468,30 +533,37 @@ export default function UserManagement() {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.email}
+                          </div>
                           {user.lastLogin && (
                             <div className="text-sm text-gray-500">
-                              Last login: {new Date(user.lastLogin).toLocaleDateString()}
+                              Last login:{" "}
+                              {new Date(user.lastLogin).toLocaleDateString()}
                             </div>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.role === 'superadmin' 
-                          ? 'bg-red-100 text-red-800'
-                          : user.role === 'admin'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          user.role === "superadmin"
+                            ? "bg-red-100 text-red-800"
+                            : user.role === "admin"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {user.assignedApps.map((appId) => {
-                          const app = AVAILABLE_APPS.find(a => a.id === appId);
+                          const app = AVAILABLE_APPS.find(
+                            (a) => a.id === appId
+                          );
                           return (
                             <span
                               key={appId}
@@ -504,12 +576,14 @@ export default function UserManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.isActive 
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.isActive ? 'Active' : 'Inactive'}
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          user.isActive
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {user.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -530,7 +604,9 @@ export default function UserManagement() {
 
             {filteredUsers.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-gray-500">No users found matching your criteria.</p>
+                <p className="text-gray-500">
+                  No users found matching your criteria.
+                </p>
               </div>
             )}
           </div>

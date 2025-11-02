@@ -4,54 +4,64 @@
  */
 
 // Load environment variables first
-import dotenv from 'dotenv';
-import path from 'path';
+import dotenv from "dotenv";
+import path from "path";
 
 // Load .env file or fallback to .env.example
-const envPath = path.resolve(__dirname, '../.env');
-const envExamplePath = path.resolve(__dirname, '../.env.example');
+const envPath = path.resolve(__dirname, "../.env");
+const envExamplePath = path.resolve(__dirname, "../.env.example");
 
 try {
-  console.log("Attempting to load .env file")
+  console.log("Attempting to load .env file");
   dotenv.config({ path: envPath });
 } catch (error) {
   // If .env doesn't exist, load .env.example
   dotenv.config({ path: envExamplePath });
-  console.log("Loaded .env.example file")
+  console.log("Loaded .env.example file");
 }
 
-console.log(process.env.SUPER_ADMIN_PASSWORD)
+console.log(process.env.SUPER_ADMIN_PASSWORD);
 
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import cookieParser from 'cookie-parser';
-import mongoose from 'mongoose';
-import { config } from './config/database';
-import { logger } from './utils/logger';
-import { errorHandler } from './middlewares/errorHandler';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
+import { config } from "./config/database";
+import { logger } from "./utils/logger";
+import { errorHandler } from "./middlewares/errorHandler";
 
 // Import routes
-import authRoutes from './routes/auth.route';
-import userRoutes from './routes/user.route';
-import appRoutes from './routes/app.route';
-import adminRoutes from './routes/admin.route';
+import authRoutes from "./routes/auth.route";
+import userRoutes from "./routes/user.route";
+import appRoutes from "./routes/app.route";
+import adminRoutes from "./routes/admin.route";
 
 const app = express();
 const PORT = process.env.PORT || 5005;
 
 // Trust the reverse proxy (like Nginx)
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 /**
  * Database connection
  */
 const connectDatabase = async (): Promise<void> => {
   try {
     await mongoose.connect(config.mongoUri);
-    logger.info('✅ MongoDB connected successfully');
+
+    const db = mongoose.connection.db;
+
+    if (db) {
+      await db.command({
+        collMod: "users",
+        validator: {},
+        validationLevel: "off",
+      });
+    }
+    logger.info("✅ MongoDB connected successfully");
   } catch (error) {
-    logger.error('❌ MongoDB connection failed:', error);
+    logger.error("❌ MongoDB connection failed:", error);
     process.exit(1);
   }
 };
@@ -61,37 +71,45 @@ const connectDatabase = async (): Promise<void> => {
  */
 const setupSecurity = (): void => {
   // Helmet for security headers
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", "data:", "https:"],
+        },
       },
-    },
-  }));
+    })
+  );
 
   // Rate limiting
   const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"), // 15 minutes
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100"), // limit each IP to 100 requests per windowMs
     message: {
       success: false,
-      message: 'Too many requests from this IP, please try again later.',
+      message: "Too many requests from this IP, please try again later.",
     },
     standardHeaders: true,
     legacyHeaders: false,
   });
-  app.use('/api/', limiter);
+  app.use("/api/", limiter);
 
   // CORS configuration
-  app.use(cors({
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  }));
+  app.use(
+    cors({
+      origin: process.env.CORS_ORIGIN?.split(",") || [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+      ],
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    })
+  );
 };
 
 /**
@@ -99,9 +117,9 @@ const setupSecurity = (): void => {
  */
 const setupMiddleware = (): void => {
   // Body parsing
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-  
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
   // Cookie parsing
   app.use(cookieParser(process.env.COOKIE_SECRET));
 
@@ -117,23 +135,23 @@ const setupMiddleware = (): void => {
  */
 const setupRoutes = (): void => {
   // Health check endpoint
-  app.get('/api/health', (_req, res) => {
+  app.get("/api/health", (_req, res) => {
     res.json({
       success: true,
-      message: 'Unified Multi-App Platform API is running',
+      message: "Unified Multi-App Platform API is running",
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV || "development",
     });
   });
 
   // API routes
-  app.use('/api/auth', authRoutes);
-  app.use('/api/users', userRoutes);
-  app.use('/api/apps', appRoutes);
-  app.use('/api/admin', adminRoutes);
+  app.use("/api/auth", authRoutes);
+  app.use("/api/users", userRoutes);
+  app.use("/api/apps", appRoutes);
+  app.use("/api/admin", adminRoutes);
 
   // 404 handler for undefined routes
-  app.use('*', (req, res) => {
+  app.use("*", (req, res) => {
     res.status(404).json({
       success: false,
       message: `Route ${req.originalUrl} not found`,
@@ -165,11 +183,11 @@ const startServer = async (): Promise<void> => {
     // Start server
     app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
-      logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
       logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
     });
   } catch (error) {
-    logger.error('❌ Failed to start server:', error);
+    logger.error("❌ Failed to start server:", error);
     process.exit(1);
   }
 };
@@ -178,14 +196,14 @@ const startServer = async (): Promise<void> => {
  * Graceful shutdown handling
  */
 const setupGracefulShutdown = (): void => {
-  process.on('SIGTERM', async () => {
-    logger.info('🛑 SIGTERM received, shutting down gracefully');
+  process.on("SIGTERM", async () => {
+    logger.info("🛑 SIGTERM received, shutting down gracefully");
     await mongoose.connection.close();
     process.exit(0);
   });
 
-  process.on('SIGINT', async () => {
-    logger.info('🛑 SIGINT received, shutting down gracefully');
+  process.on("SIGINT", async () => {
+    logger.info("🛑 SIGINT received, shutting down gracefully");
     await mongoose.connection.close();
     process.exit(0);
   });

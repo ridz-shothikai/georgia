@@ -1,4 +1,3 @@
-
 # 🧭 Product Requirements Document (PRD)
 
 ## Project Title
@@ -60,15 +59,16 @@ All apps will be hosted under **one domain**:
 3. Backend generates a JWT with user permissions (`appAccess: ['app1']`).
 4. After login:
 
-   * If `SuperAdmin`: redirect → `/admin-dashboard`.
-   * If `User`: redirect → first assigned app (e.g., `/app1`).
+   - If `SuperAdmin`: redirect → `/admin-dashboard`.
+   - If `User`: redirect → first assigned app (e.g., `/app1`).
+
 5. Each frontend app validates token via backend middleware before rendering.
 
 ### 4.3 Token Validation
 
-* JWT stored in `httpOnly` cookie.
-* Shared middleware in all apps to verify token via `/api/auth/verify`.
-* Token payload:
+- JWT stored in `httpOnly` cookie.
+- Shared middleware in all apps to verify token via `/api/auth/verify`.
+- Token payload:
 
   ```json
   {
@@ -81,8 +81,8 @@ All apps will be hosted under **one domain**:
 
 ### 4.4 Permission Enforcement
 
-* Frontend guards (middleware) block access to unauthorized routes.
-* Backend endpoints check permissions from decoded JWT.
+- Frontend guards (middleware) block access to unauthorized routes.
+- Backend endpoints check permissions from decoded JWT.
 
 ---
 
@@ -153,8 +153,8 @@ All apps will be hosted under **one domain**:
 
 ### 7.1 Middleware
 
-* `authMiddleware`: verifies JWT and attaches user to `req.user`.
-* `permissionMiddleware(requiredApp)`: ensures user has access to the app route.
+- `authMiddleware`: verifies JWT and attaches user to `req.user`.
+- `permissionMiddleware(requiredApp)`: ensures user has access to the app route.
 
 ---
 
@@ -182,7 +182,7 @@ src/
 All apps share a common **Auth SDK** (internal npm package or shared lib):
 
 ```ts
-import { verifyToken, getUserRole } from '@platform/auth-sdk';
+import { verifyToken, getUserRole } from "@platform/auth-sdk";
 ```
 
 ### 8.3 Routing Guards
@@ -190,16 +190,16 @@ import { verifyToken, getUserRole } from '@platform/auth-sdk';
 Next.js Middleware (`middleware.ts`):
 
 ```ts
-import { NextResponse } from 'next/server';
-import { verifyToken } from './lib/auth';
+import { NextResponse } from "next/server";
+import { verifyToken } from "./lib/auth";
 
 export function middleware(req) {
-  const token = req.cookies.get('token');
+  const token = req.cookies.get("token");
   const user = verifyToken(token);
 
-  if (!user) return NextResponse.redirect('/login');
-  if (!user.appAccess.includes('app1'))
-    return NextResponse.redirect('/unauthorized');
+  if (!user) return NextResponse.redirect("/login");
+  if (!user.appAccess.includes("app1"))
+    return NextResponse.redirect("/unauthorized");
 }
 ```
 
@@ -261,20 +261,20 @@ server {
 
 ## 11. 🛡️ Security & Compliance
 
-* Passwords hashed using **bcrypt**
-* JWT tokens with **short expiry + refresh tokens**
-* Role-based access control (RBAC)
-* HTTPS enforced
-* Admin actions logged for audit trail
+- Passwords hashed using **bcrypt**
+- JWT tokens with **short expiry + refresh tokens**
+- Role-based access control (RBAC)
+- HTTPS enforced
+- Admin actions logged for audit trail
 
 ---
 
 ## 12. 🚀 Future Scalability
 
-* Add `/app4`, `/app5` with minimal backend changes (config-based routing).
-* Optional: integrate **Keycloak / Clerk / Auth0** later for enterprise SSO.
-* Multi-region scaling using **Docker + Load Balancer**.
-* Possible integration with **Micro Frontend architecture** in Next.js 17.
+- Add `/app4`, `/app5` with minimal backend changes (config-based routing).
+- Optional: integrate **Keycloak / Clerk / Auth0** later for enterprise SSO.
+- Multi-region scaling using **Docker + Load Balancer**.
+- Possible integration with **Micro Frontend architecture** in Next.js 17.
 
 ---
 
@@ -302,4 +302,3 @@ server {
 | Deployment      | NGINX + Docker                                                |
 | Version Control | GitHub + GHCR                                                 |
 | CI/CD           | GitHub Actions                                                |
-
