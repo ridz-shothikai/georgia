@@ -10,6 +10,7 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import ChatApp from "./components/ChatApp";
 
 export default function App2Dashboard() {
   const { user: userData, isLoading, logout } = useAuth();
@@ -146,148 +147,7 @@ export default function App2Dashboard() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Welcome Card */}
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">2</span>
-                    </div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Application
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        Region 2 App
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* User Info Card */}
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">U</span>
-                    </div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        User Role
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900 capitalize">
-                        {user.role}
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* App Access Card */}
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">A</span>
-                    </div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        App Access
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        {user.assignedApps?.length || 0} Apps
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Features Section */}
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  App2 Features
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Feature 1
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      This is a placeholder for App2 specific functionality.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Feature 2
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      Another feature specific to Application 2.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Feature 3
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      Additional functionality for App2 users.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Feature 4
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      More App2 specific features and capabilities.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation Links */}
-          {parsedUser?.user?.role === "superadmin" && (
-            <div className="mt-12 text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Admin Access
-              </h3>
-              <div className="space-x-4">
-                <a
-                  href={`http://localhost:3001/?access=${accessToken}`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                >
-                  Go to Region 14
-                </a>
-                <a
-                  href="http://localhost:3000"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
-                >
-                  Admin Dashboard
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
+      <ChatApp />
     </div>
   );
 }
