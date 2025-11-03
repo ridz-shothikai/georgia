@@ -10,8 +10,8 @@ RUN npm config set fetch-timeout 300000 && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (no lock file present, use install)
+RUN npm install
 
 # Expose port
 EXPOSE 5005
