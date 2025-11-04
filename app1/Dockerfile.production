@@ -12,7 +12,7 @@ COPY shared ./shared
 RUN npm config set fetch-timeout 300000 && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000 && \
-    npm ci
+    npm install
 
 # Copy app1 source code
 COPY app1/ .
@@ -31,7 +31,7 @@ ENV NODE_ENV=production
 COPY app1/package*.json ./
 
 # Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copy built application from builder
 COPY --from=builder /app/.next ./.next
