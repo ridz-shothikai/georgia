@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fix-auth
   workflow_dispatch:
 
 env:
@@ -22,17 +23,25 @@ jobs:
       matrix:
         include:
           - name: backend
-            context: backend
+            context: .
             dockerfile: backend/Dockerfile
+            service_dir: backend
+            build_order: 1
           - name: app1
-            context: app1
+            context: .
             dockerfile: app1/Dockerfile
+            service_dir: app1
+            build_order: 2
           - name: app2
-            context: app2
+            context: .
             dockerfile: app2/Dockerfile
+            service_dir: app2
+            build_order: 3
           - name: admin-dashboard
-            context: admin-dashboard
+            context: .
             dockerfile: admin-dashboard/Dockerfile
+            service_dir: admin-dashboard
+            build_order: 4
 
     steps:
       - name: Checkout
@@ -61,8 +70,11 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
+          build-args: |
+            SERVICE_DIR=${{ matrix.service_dir }}
           tags: |
             ${{ env.IMAGE }}:${{ env.SHORT_SHA }}
+            ${{ env.IMAGE }}:latest
           labels: |
             org.opencontainers.image.source=${{ github.repositoryUrl }}
             org.opencontainers.image.revision=${{ github.sha }}
