@@ -3,6 +3,8 @@ FROM node:20-alpine
 ARG SERVICE_DIR=backend
 WORKDIR /app
 
+# Updated: 2025-11-04 - Fixed package.json copy paths
+
 # Copy package files first
 COPY ${SERVICE_DIR}/package*.json ./
 COPY ${SERVICE_DIR}/tsconfig.json ./
