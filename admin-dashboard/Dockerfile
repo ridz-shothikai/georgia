@@ -1,29 +1,65 @@
-FROM node:20-alpine
+# Build stage
+FROM node:20-alpine AS builder
 
 ARG SERVICE_DIR=admin-dashboard
 WORKDIR /app
 
-ENV NODE_ENV=development
-
 # Copy package files
 COPY ${SERVICE_DIR}/package*.json ./
-COPY shared/package.json ./shared/
+COPY shared/package.json ./shared/package.json
 
-# Configure npm for better reliability
+# Install all dependencies
 RUN npm config set fetch-timeout 300000 && \
     npm config set fetch-retries 5 && \
-    npm config set fetch-retry-mintimeout 20000
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm ci
 
-# Install dependencies (including dev dependencies for Next.js dev mode)
-RUN npm install
-
-# Copy source files
+# Copy source code
 COPY ${SERVICE_DIR}/ ./
-COPY shared/ ./shared/
+COPY shared ./shared
+
+# Build Next.js application
+ENV NODE_ENV=production
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy package files
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/shared/package.json ./shared/package.json
+
+# Install only production dependencies
+RUN npm config set fetch-timeout 300000 && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm ci --only=production
+
+# Copy built Next.js app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.* ./
+COPY --from=builder /app/shared ./shared
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Set correct permissions
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
 
 # Expose port
 EXPOSE 3000
 
-# Run dev server on port 3000 (nginx expects this)
-CMD ["npm", "run", "dev", "--", "-p", "3000"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
+# Run production server
+CMD ["npm", "start"]
