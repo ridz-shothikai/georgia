@@ -18,6 +18,9 @@ RUN npm config set fetch-timeout 300000 && \
 COPY ${SERVICE_DIR}/ ./
 COPY shared ./shared
 
+# Build shared package first
+RUN cd shared && npm install && npm run build && cd ..
+
 # Build Next.js application
 ENV NODE_ENV=production
 RUN npm run build
