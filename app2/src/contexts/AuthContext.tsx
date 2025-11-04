@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authApi.login(email, password);
       if (response.success && response.data) {
-        setUser(response.data.user);
+        setUser(response.data.user as User);
       }
       return response;
     } catch (error) {

@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             "AuthProvider: Token verification successful, setting user:",
             response.data.user
           );
-          setUser(response.data.user);
+          setUser(response.data.user as User);
           saveUserToStorage(response.data.user);
         } else {
           // console.log('AuthProvider: Token verification failed, clearing user');
@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authApi.login(email, password);
       if (response.success && response.data?.user) {
-        setUser(response.data.user);
+        setUser(response.data.user as User);
         saveUserToStorage(response.data.user);
       }
       return response;
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (response.success && response.data?.user) {
           console.log("Token verification successful:", response.data.user);
-          setUser(response.data.user);
+          setUser(response.data.user as User);
           saveUserToStorage(response.data.user);
           return true;
         }
@@ -167,7 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (response.success && response.data?.user) {
           console.log("Token verification successful:", response.data.user);
-          setUser(response.data.user);
+          setUser(response.data.user as User);
           saveUserToStorage(response.data.user);
           return true;
         }

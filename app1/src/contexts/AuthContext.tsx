@@ -55,7 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authApi.login(email, password);
 
       if (response.success && response.data) {
-        setUser(response.data.user);
+        setUser(response.data.user as User);
 
         // Redirect to the appropriate URL
         if (response.data.redirectUrl) {
