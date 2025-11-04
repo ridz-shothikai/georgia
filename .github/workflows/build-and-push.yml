@@ -24,16 +24,16 @@ jobs:
         include:
           - name: backend
             context: backend
-            dockerfile: backend/Dockerfile
+            dockerfile: backend/Dockerfile.production
           - name: app1
-            context: app1
-            dockerfile: app1/Dockerfile
+            context: .
+            dockerfile: app1/Dockerfile.production
           - name: app2
             context: app2
-            dockerfile: app2/Dockerfile
+            dockerfile: app2/Dockerfile.production
           - name: admin-dashboard
             context: admin-dashboard
-            dockerfile: admin-dashboard/Dockerfile
+            dockerfile: admin-dashboard/Dockerfile.production
 
     steps:
       - name: Checkout

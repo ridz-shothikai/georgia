@@ -1,0 +1,109 @@
+version: "3.8"
+
+services:
+  backend:
+    image: ghcr.io/ridz-shothikai/georgia-backend-api:${IMAGE_TAG:-latest}
+    container_name: platform-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5005
+      MONGODB_URI: ${MONGODB_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      FRONTEND_URLS: ${FRONTEND_URLS:-http://localhost:3000,http://localhost}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost}
+    networks:
+      - platform-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:5005/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  region14:
+    image: ghcr.io/ridz-shothikai/georgia-app1:${IMAGE_TAG:-latest}
+    container_name: platform-region14
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: /api
+      NEXT_PUBLIC_APP_NAME: region14
+    depends_on:
+      - backend
+    networks:
+      - platform-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  region2:
+    image: ghcr.io/ridz-shothikai/georgia-app2:${IMAGE_TAG:-latest}
+    container_name: platform-region2
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: /api
+      NEXT_PUBLIC_APP_NAME: region2
+    depends_on:
+      - backend
+    networks:
+      - platform-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  dashboard:
+    image: ghcr.io/ridz-shothikai/georgia-admin-dashboard:${IMAGE_TAG:-latest}
+    container_name: platform-dashboard
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: /api
+      NEXT_PUBLIC_APP_NAME: dashboard
+      NEXT_PUBLIC_ADMIN_EMAIL: ${ADMIN_EMAIL}
+      NEXT_PUBLIC_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - backend
+    networks:
+      - platform-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    container_name: platform-nginx
+    restart: unless-stopped
+    ports:
+      - "3023:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - backend
+      - region14
+      - region2
+      - dashboard
+    networks:
+      - platform-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  platform-network:
+    driver: bridge
