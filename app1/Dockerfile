@@ -2,8 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from app1 (build context is root)
+COPY app1/package*.json ./
+
+# Copy shared directory (build context is root)
+COPY shared ./shared
 
 # Configure npm for better reliability
 RUN npm config set fetch-timeout 300000 && \
@@ -12,6 +15,9 @@ RUN npm config set fetch-timeout 300000 && \
 
 # Install dependencies (using npm install for local file dependencies)
 RUN npm install
+
+# Copy app1 source code (build context is root)
+COPY app1/ .
 
 # Expose port
 EXPOSE 3001
