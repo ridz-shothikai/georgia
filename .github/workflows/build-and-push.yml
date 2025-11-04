@@ -69,7 +69,5 @@ jobs:
             org.opencontainers.image.source=${{ github.repositoryUrl }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.title=${{ matrix.name }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
 
