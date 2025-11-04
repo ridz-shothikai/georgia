@@ -154,6 +154,7 @@ export default function UserManagement() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("fileCategories", createForm.fileCategories);
 
     if (!validateForm()) {
       return;

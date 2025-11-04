@@ -9,12 +9,14 @@ import bcrypt from "bcryptjs";
 // Define types locally for now (will be moved to shared package later)
 export type UserRole = "superadmin" | "user";
 export type AppName = "region14" | "region2" | "dashboard";
+export type FileCategory = "reports" | "invoices" | "contracts" | "hr" | "misc";
 
 export interface IUser extends Document {
   email: string;
   passwordHash: string;
   role: UserRole;
   assignedApps: AppName[];
+  fileCategories?: FileCategory[];
   firstName?: string;
   lastName?: string;
   lastLogin?: Date;
@@ -68,6 +70,15 @@ const userSchema = new Schema<IUser>(
         enum: {
           values: ["region14", "region2", "dashboard"],
           message: "Invalid app name",
+        },
+      },
+    ],
+    fileCategories: [
+      {
+        type: String,
+        enum: {
+          values: ["reports", "invoices", "contracts", "hr", "misc"],
+          message: "Invalid file category",
         },
       },
     ],
