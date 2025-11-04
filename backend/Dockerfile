@@ -13,7 +13,7 @@ COPY shared/package.json ./shared/package.json
 RUN npm config set fetch-timeout 300000 && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000 && \
-    npm ci
+    npm install
 
 # Copy source code
 COPY ${SERVICE_DIR}/src ./src
@@ -35,7 +35,7 @@ COPY --from=builder /app/shared/package.json ./shared/package.json
 RUN npm config set fetch-timeout 300000 && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000 && \
-    npm ci --only=production
+    npm install --only=production
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
