@@ -7,13 +7,11 @@ import { useEffect } from 'react';
  */
 
 import { useAuth } from '../../contexts/AuthContext';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Unauthorized() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const param  = useParams();
-  const searchParam = useSearchParams();
 
   useEffect(() => {
     // Check if we're in the browser environment

@@ -12,7 +12,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { authApi, AuthState } from "../lib/shared/auth";
+import { authApi, AuthState, User } from "../lib/shared/auth";
 
 // Custom response type for verify endpoint
 interface VerifyResponse {
