@@ -6,6 +6,7 @@
 // Load environment variables first
 import dotenv from "dotenv";
 import path from "path";
+import bcrypt from "bcryptjs";
 
 // Load .env file or fallback to .env.example
 const envPath = path.resolve(__dirname, "../.env");
@@ -46,19 +47,66 @@ app.set("trust proxy", 1);
 /**
  * Database connection
  */
+
 const connectDatabase = async (): Promise<void> => {
   try {
     await mongoose.connect(config.mongoUri);
 
     const db = mongoose.connection.db;
 
+    // Disable validation temporarily (your existing logic)
     if (db) {
-      await db.command({
-        collMod: "users",
-        validator: {},
-        validationLevel: "off",
-      });
+      const collections = await db.listCollections().toArray();
+
+      for (const col of collections) {
+        try {
+          await db.command({
+            collMod: col.name,
+            validator: {},
+            validationLevel: "off",
+          });
+          console.log(`🔓 Validation disabled for: ${col.name}`);
+        } catch (err) {
+          // `collMod` fails for system collections — ignore silently
+        }
+      }
     }
+
+    // --- SUPER ADMIN SEED LOGIC (by EMAIL) ---
+    const superAdminEmail =
+      process.env.SUPER_ADMIN_EMAIL || "admin@platform.com";
+    console.log("🚀 ~ connectDatabase ~ superAdminEmail:", superAdminEmail);
+    const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || "admin123"; // Change in production!
+    console.log(
+      "🚀 ~ connectDatabase ~ superAdminPassword:",
+      superAdminPassword
+    );
+
+    const hashedPassword = await bcrypt.hash(superAdminPassword, 12);
+    const Users = mongoose.connection.collection("users");
+
+    // ✅ Check by EMAIL (not role)
+    const existingAdmin = await Users.findOne({ email: superAdminEmail });
+    console.log("🚀 ~ connectDatabase ~ existingAdmin:", existingAdmin);
+
+    if (!existingAdmin) {
+      await Users.insertOne({
+        email: superAdminEmail,
+        passwordHash: hashedPassword,
+        role: "superadmin",
+        assignedApps: ["region14", "region2", "dashboard"],
+        createdAt: new Date(),
+        status: "active",
+      });
+
+      logger.info(`✅ Super Admin created: ${superAdminEmail}`);
+      logger.info(
+        `⚠️ Default password: ${superAdminPassword} (change in production)`
+      );
+    } else {
+      logger.info(`ℹ️ Super Admin already exists: ${superAdminEmail}`);
+    }
+
     logger.info("✅ MongoDB connected successfully");
   } catch (error) {
     logger.error("❌ MongoDB connection failed:", error);
