@@ -19,7 +19,7 @@ services:
       - platform-network
 
   backend:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_PREFIX:-owner/repo}-backend:${TAG:-latest}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_PREFIX:-owner/repo}-backend-api:${TAG:-latest}
     container_name: platform-backend
     restart: unless-stopped
     ports:
