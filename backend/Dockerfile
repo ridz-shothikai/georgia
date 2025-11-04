@@ -15,7 +15,6 @@ RUN npm install
 
 # Expose port
 EXPOSE 5005
-
 # Default command (will be overridden by docker-compose for dev)
 CMD ["npm", "run", "dev"]
 
