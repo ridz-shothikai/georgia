@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /**
@@ -12,6 +13,7 @@ interface User {
   email: string;
   role: string;
   assignedApps: string[];
+  fileCategories?: string[]; // NEW
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;
@@ -23,6 +25,7 @@ interface CreateUserForm {
   confirmPassword: string;
   role: string;
   assignedApps: string[];
+  fileCategories: string[]; // NEW
 }
 
 const AVAILABLE_APPS = [
@@ -33,6 +36,12 @@ const AVAILABLE_APPS = [
     name: "Dashboard",
     url: "http://localhost:3000/dashboard",
   },
+];
+
+const FILE_CATEGORIES = [
+  { id: "reports", label: "Reports" },
+  { id: "invoices", label: "Invoices" },
+  { id: "contracts", label: "Contracts" },
 ];
 
 const ROLES = [
@@ -52,6 +61,7 @@ export default function UserManagement() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("");
+  const [filterCategory, setFilterCategory] = useState(""); // NEW
   const [notification, setNotification] = useState<{
     type: "success" | "error";
     message: string;
@@ -63,6 +73,7 @@ export default function UserManagement() {
     confirmPassword: "",
     role: "user",
     assignedApps: [],
+    fileCategories: [], // NEW
   });
 
   const [formErrors, setFormErrors] = useState<Partial<CreateUserForm>>({});
@@ -127,7 +138,14 @@ export default function UserManagement() {
     }
 
     if (createForm.assignedApps.length === 0) {
-      errors.assignedApps = ["At least one app must be assigned"] as any;
+      // note: preserve same type shape for message rendering
+      (errors as any).assignedApps = ["At least one app must be assigned"];
+    }
+
+    if (createForm.fileCategories.length === 0) {
+      (errors as any).fileCategories = [
+        "At least one file category must be selected",
+      ];
     }
 
     setFormErrors(errors);
@@ -157,6 +175,7 @@ export default function UserManagement() {
             password: createForm.password,
             role: createForm.role,
             assignedApps: createForm.assignedApps,
+            fileCategories: createForm.fileCategories, // NEW
           }),
           credentials: "include",
         }
@@ -167,7 +186,7 @@ export default function UserManagement() {
         throw new Error(errorData.message || "Failed to create user");
       }
 
-      const data = await response.json();
+      await response.json();
       setNotification({
         type: "success",
         message: "User created successfully!",
@@ -179,6 +198,7 @@ export default function UserManagement() {
         confirmPassword: "",
         role: "user",
         assignedApps: [],
+        fileCategories: [], // reset
       });
       setFormErrors({});
       fetchUsers(); // Refresh the user list
@@ -236,6 +256,15 @@ export default function UserManagement() {
     }));
   };
 
+  const handleFileCategoryToggle = (catId: string) => {
+    setCreateForm((prev) => ({
+      ...prev,
+      fileCategories: prev.fileCategories.includes(catId)
+        ? prev.fileCategories.filter((id) => id !== catId)
+        : [...prev.fileCategories, catId],
+    }));
+  };
+
   console.log("Users", users);
 
   const filteredUsers =
@@ -245,7 +274,10 @@ export default function UserManagement() {
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesRole = !filterRole || user.role === filterRole;
-      return matchesSearch && matchesRole;
+      const matchesCategory =
+        !filterCategory ||
+        (user.fileCategories && user.fileCategories.includes(filterCategory));
+      return matchesSearch && matchesRole && matchesCategory;
     });
 
   if (loading) {
@@ -429,7 +461,34 @@ export default function UserManagement() {
               </div>
               {formErrors.assignedApps && (
                 <p className="text-red-500 text-xs mt-1">
-                  {formErrors.assignedApps}
+                  {(formErrors as any).assignedApps}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                File Categories *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {FILE_CATEGORIES.map((cat) => (
+                  <label
+                    key={cat.id}
+                    className="flex items-center space-x-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={createForm.fileCategories.includes(cat.id)}
+                      onChange={() => handleFileCategoryToggle(cat.id)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">{cat.label}</span>
+                  </label>
+                ))}
+              </div>
+              {formErrors.fileCategories && (
+                <p className="text-red-500 text-xs mt-1">
+                  {(formErrors as any).fileCategories}
                 </p>
               )}
             </div>
@@ -480,6 +539,21 @@ export default function UserManagement() {
               ))}
             </select>
           </div>
+
+          <div className="sm:w-48">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            >
+              <option value="">All Categories</option>
+              {FILE_CATEGORIES.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -508,6 +582,9 @@ export default function UserManagement() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Assigned Apps
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    File Categories
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -575,6 +652,25 @@ export default function UserManagement() {
                         })}
                       </div>
                     </td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {(user.fileCategories || []).map((catId) => {
+                          const cat = FILE_CATEGORIES.find(
+                            (c) => c.id === catId
+                          );
+                          return (
+                            <span
+                              key={catId}
+                              className="inline-flex px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full"
+                            >
+                              {cat?.label || catId}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
