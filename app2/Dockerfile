@@ -21,6 +21,9 @@ COPY shared ./shared
 # Build shared package first
 RUN cd shared && npm install && npm run build && cd ..
 
+# Copy built shared files to lib/shared for Next.js to use
+RUN cp -r shared/dist/* src/lib/shared/
+
 # Build Next.js application
 ENV NODE_ENV=production
 RUN npm run build
