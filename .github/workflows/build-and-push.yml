@@ -55,7 +55,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          logout: false
 
       - name: Build and push ${{ matrix.name }}
         uses: docker/build-push-action@v5
