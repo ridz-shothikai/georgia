@@ -277,8 +277,7 @@ export default function UnifiedLogin() {
                       <div className="flex justify-between items-center">
                         <span className="font-medium">Password:</span>
                         <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                          {process.env.NEXT_PUBLIC_ADMIN_PASSWORD ||
-                            "change-this-password"}
+                          {process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123"}
                         </code>
                       </div>
                     </div>
