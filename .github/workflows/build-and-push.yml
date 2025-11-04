@@ -46,8 +46,14 @@ jobs:
       - name: Set image name
         id: img
         run: |
-          IMAGE=${REGISTRY}/${IMAGE_PREFIX}-${{ matrix.name }}
+          # Use a different name for backend to avoid potential naming conflicts
+          if [ "${{ matrix.name }}" = "backend" ]; then
+            IMAGE=${REGISTRY}/${IMAGE_PREFIX}-backend-api
+          else
+            IMAGE=${REGISTRY}/${IMAGE_PREFIX}-${{ matrix.name }}
+          fi
           echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+          echo "Package name: ${IMAGE}"
 
       - name: Login to GHCR
         uses: docker/login-action@v3

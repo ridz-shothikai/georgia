@@ -19,7 +19,7 @@ services:
       - platform-network
 
   backend:
-    image: ${REGISTRY}/${IMAGE_PREFIX}-backend:${TAG}
+    image: ${REGISTRY}/${IMAGE_PREFIX}-backend-api:${TAG}
     container_name: platform-backend
     restart: unless-stopped
     ports:
