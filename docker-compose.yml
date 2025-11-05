@@ -106,7 +106,7 @@ services:
       NEXT_PUBLIC_API_URL: /api
       NEXT_PUBLIC_APP_NAME: dashboard
       NEXT_PUBLIC_ADMIN_EMAIL: admin@platform.com
-      NEXT_PUBLIC_ADMIN_PASSWORD: change-this-password
+      NEXT_PUBLIC_ADMIN_PASSWORD: admin123
     depends_on:
       - backend
     volumes:
