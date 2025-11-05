@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   mongodb:
     image: mongo:7.0
@@ -19,7 +17,7 @@ services:
       - platform-network
 
   backend:
-    image: ${REGISTRY}/${IMAGE_PREFIX}-backend:${TAG}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_PREFIX:-owner/repo}-backend-api:${TAG:-latest}
     container_name: platform-backend
     restart: unless-stopped
     ports:
@@ -39,7 +37,7 @@ services:
       - platform-network
 
   region14:
-    image: ${REGISTRY}/${IMAGE_PREFIX}-app1:${TAG}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_PREFIX:-owner/repo}-app1:${TAG:-latest}
     container_name: platform-region14
     restart: unless-stopped
     environment:
@@ -52,7 +50,7 @@ services:
       - platform-network
 
   region2:
-    image: ${REGISTRY}/${IMAGE_PREFIX}-app2:${TAG}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_PREFIX:-owner/repo}-app2:${TAG:-latest}
     container_name: platform-region2
     restart: unless-stopped
     environment:
@@ -65,7 +63,7 @@ services:
       - platform-network
 
   dashboard:
-    image: ${REGISTRY}/${IMAGE_PREFIX}-admin-dashboard:${TAG}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_PREFIX:-owner/repo}-admin-dashboard:${TAG:-latest}
     container_name: platform-dashboard
     restart: unless-stopped
     environment:
@@ -84,7 +82,7 @@ services:
     container_name: platform-nginx
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3023:3000"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:

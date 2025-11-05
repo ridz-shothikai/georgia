@@ -58,14 +58,14 @@ docker compose build backend
 echo -e "${GREEN}✓ Backend built${NC}"
 echo ""
 
-echo -e "${YELLOW}Building App1 (Next.js production build)...${NC}"
-docker compose build app1
-echo -e "${GREEN}✓ App1 built${NC}"
+echo -e "${YELLOW}Building App1 (Region14 - Next.js production build)...${NC}"
+docker compose build region14
+echo -e "${GREEN}✓ Region14 built${NC}"
 echo ""
 
-echo -e "${YELLOW}Building App2 (Next.js production build)...${NC}"
-docker compose build app2
-echo -e "${GREEN}✓ App2 built${NC}"
+echo -e "${YELLOW}Building App2 (Region2 - Next.js production build)...${NC}"
+docker compose build region2
+echo -e "${GREEN}✓ Region2 built${NC}"
 echo ""
 
 echo -e "${YELLOW}Building Admin Dashboard (Next.js production build)...${NC}"
@@ -110,9 +110,9 @@ check_health() {
 
 check_health "mongodb"
 check_health "backend"
-check_health "app1"
-check_health "app2"
-check_health "admin-dashboard"
+check_health "region14"
+check_health "region2"
+check_health "dashboard"
 check_health "nginx"
 
 echo ""

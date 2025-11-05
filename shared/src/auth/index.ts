@@ -376,3 +376,6 @@ export {
   AuthState as State,
   ServerAuth as Server,
 };
+
+// Re-export types from types module
+export type { User, JWTPayload, LoginResponse, ApiResponse } from "../types";

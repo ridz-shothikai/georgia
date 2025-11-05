@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # MongoDB Database
   mongodb:
@@ -21,8 +19,10 @@ services:
   # Backend API
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        SERVICE_DIR: backend
     container_name: platform-backend
     restart: unless-stopped
     ports:
@@ -47,8 +47,10 @@ services:
   # Region14 Frontend (was app1)
   region14:
     build:
-      context: ./app1
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: app1/Dockerfile
+      args:
+        SERVICE_DIR: app1
     container_name: platform-region14
     restart: unless-stopped
     ports:
@@ -71,8 +73,10 @@ services:
   # Region2 Frontend (was app2)
   region2:
     build:
-      context: ./app2
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: app2/Dockerfile
+      args:
+        SERVICE_DIR: app2
     container_name: platform-region2
     restart: unless-stopped
     ports:
@@ -95,8 +99,10 @@ services:
   # Dashboard Frontend (was admin-dashboard)
   dashboard:
     build:
-      context: ./admin-dashboard
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: admin-dashboard/Dockerfile
+      args:
+        SERVICE_DIR: admin-dashboard
     container_name: platform-dashboard
     restart: unless-stopped
     ports:
