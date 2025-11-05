@@ -1,19 +1,246 @@
+/* eslint-disable react-hooks/immutability */
+"use client";
+
+import { useAuth } from "@/contexts/AuthContext";
 import React, { useState, useRef, useEffect } from "react";
 
-export default function ChatUI() {
+// SVG Icon Components
+const MessageSquareIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const PlusIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const MenuIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+const SendIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+
+const UserIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const SparklesIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 3l1.545 4.635L18.18 9.18l-4.635 1.545L12 15.36l-1.545-4.635L5.82 9.18l4.635-1.545z" />
+    <path d="M8 3l.364 1.091L9.455 4.8l-1.091.364L8 6.255l-.364-1.091L6.545 4.8l1.091-.364z" />
+    <path d="M18 15l.364 1.091L19.455 16.8l-1.091.364L18 18.255l-.364-1.091L16.545 16.8l1.091-.364z" />
+  </svg>
+);
+
+const CodeIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  </svg>
+);
+
+const LightbulbIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 18h6" />
+    <path d="M10 22h4" />
+    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8a6 6 0 1 0-12 0c0 1.33.47 2.55 1.5 3.5.76.76 1.23 1.52 1.41 2.5" />
+  </svg>
+);
+
+const HelpCircleIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const ChevronDownIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+const LogOutIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
+export default function EnhancedChatUI() {
+  const { user: userData, logout } = useAuth();
+
+  const user = userData?.user || userData;
+
   const [messages, setMessages] = useState([
     {
       id: 1,
       role: "assistant",
-      content: "Hello! I'm your AI assistant. How can I help you today?",
+      content:
+        "Hello! I'm Georgia, your AI assistant. How can I help you today?",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showPrompts, setShowPrompts] = useState(true);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+
+  const [currentApp, setCurrentApp] = useState("region2");
+
+  const appConfig = {
+    dashboard: { name: "Dashboard", color: "bg-blue-500", url: "/dashboard" },
+    region14: { name: "Region 14", color: "bg-indigo-500", url: "/region14" },
+    region2: { name: "Region 2", color: "bg-purple-500", url: "/region2" },
+  };
+
+  const conversations = [
+    { id: 1, title: "Current conversation", active: true, date: "Today" },
+    { id: 2, title: "Georgia", active: false, date: "Today" },
+    {
+      id: 3,
+      title: "Project planning discussion",
+      active: false,
+      date: "Yesterday",
+    },
+    { id: 4, title: "Code review feedback", active: false, date: "Yesterday" },
+  ];
+
+  const promptCards = [
+    {
+      icon: <SparklesIcon className="w-5 h-5" />,
+      title: "Get creative",
+      description: "Help me brainstorm ideas for a new project",
+      color: "text-purple-600",
+    },
+    {
+      icon: <MessageSquareIcon className="w-5 h-5" />,
+      title: "Explain concepts",
+      description: "Explain quantum computing in simple terms",
+      color: "text-blue-600",
+    },
+    {
+      icon: <CodeIcon className="w-5 h-5" />,
+      title: "Write code",
+      description: "Write a Python function to sort a list",
+      color: "text-green-600",
+    },
+    {
+      icon: <HelpCircleIcon className="w-5 h-5" />,
+      title: "Get advice",
+      description: "What are best practices for API design?",
+      color: "text-orange-600",
+    },
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -27,7 +254,7 @@ export default function ChatUI() {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
+        Math.min(textareaRef.current.scrollHeight, 160) + "px";
     }
   }, [input]);
 
@@ -44,17 +271,18 @@ export default function ChatUI() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
+    setShowPrompts(false);
 
     setTimeout(() => {
       const aiMessage = {
         id: Date.now() + 1,
         role: "assistant",
-        content: `I received your message: "${userMessage.content}". This is a demo response. In a real application, this would connect to an AI API to generate meaningful responses based on your input.`,
+        content: `I understand you're asking about "${userMessage.content}". I'm here to help! This is a demonstration of how I would respond with detailed, thoughtful answers to your questions. In a production environment, I would connect to an AI service to provide intelligent, context-aware responses.`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }, 1500);
   };
 
   const handleKeyDown = (e) => {
@@ -69,251 +297,331 @@ export default function ChatUI() {
       {
         id: Date.now(),
         role: "assistant",
-        content: "Hello! I'm your AI assistant. How can I help you today?",
+        content:
+          "Hello! I'm Georgia, your AI assistant. How can I help you today?",
         timestamp: new Date(),
       },
     ]);
     setInput("");
+    setShowPrompts(true);
+  };
+
+  const handlePromptClick = (prompt) => {
+    setInput(prompt.description);
+    textareaRef.current?.focus();
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    localStorage.clear();
+    window.location.href = "http://localhost:3000/login";
+  };
+
+  const handleAppSwitch = (appId) => {
+    setCurrentApp(appId);
+    setIsDropdownOpen(false);
+    window.location.href = appConfig[appId].url;
   };
 
   return (
-    <div className="flex h-[93vh] bg-white overflow-hidden">
-      {/* Sidebar */}
-      <div
-        className={`${
-          isSidebarOpen ? "w-64" : "w-0"
-        } bg-gray-900 text-white flex flex-col transition-all duration-300 overflow-hidden`}
-      >
-        <div className="p-4">
-          <button
-            onClick={startNewChat}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors duration-200"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span className="text-sm">New chat</span>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-2">
-          <div className="space-y-1">
-            <div className="px-3 py-2 text-xs text-gray-400 font-semibold uppercase tracking-wide">
-              Today
-            </div>
-            <button className="w-full text-left px-3 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors duration-200 flex items-center gap-3 group">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span className="truncate text-sm">Current conversation</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors duration-200">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            </div>
-            <span className="text-sm">User</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="border-b border-gray-200 px-4 py-3 flex items-center gap-3 bg-white">
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-          <h1 className="text-lg font-semibold text-gray-800">Georgia</h1>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto bg-white">
-          <div className="max-w-3xl mx-auto px-4 py-8">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`mb-8 flex gap-4 ${
-                  message.role === "user" ? "flex-row-reverse" : ""
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    message.role === "user"
-                      ? "bg-gradient-to-br from-purple-500 to-pink-500"
-                      : "bg-gradient-to-br from-green-400 to-blue-500"
-                  }`}
-                >
-                  {message.role === "user" ? (
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  ) : (
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="white"
-                    >
-                      <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z" />
-                    </svg>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div
-                    className={`text-sm font-semibold mb-1 text-gray-700 ${
-                      message.role === "user" ? "text-right" : ""
-                    }`}
-                  >
-                    {message.role === "user" ? "You" : "Georgia"}
-                  </div>
-                  <div
-                    className={`${
-                      message.role === "user"
-                        ? "bg-gray-100 px-4 py-3 rounded-2xl inline-block float-right max-w-full"
-                        : ""
-                    }`}
-                  >
-                    <p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-[15px]">
-                      {message.content}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="mb-8 flex gap-4 animate-fadeIn">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center flex-shrink-0">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                    <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold mb-1 text-gray-700">
-                    Georgia
-                  </div>
-                  <div className="flex gap-1 py-2">
-                    <div
-                      className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                      style={{ animationDelay: "0ms" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                      style={{ animationDelay: "150ms" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
-                      style={{ animationDelay: "300ms" }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t border-gray-200 p-4 bg-white">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex gap-3 items-end bg-white border border-gray-300 rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-200 p-2 focus-within:border-gray-400">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Message Georgia..."
-                disabled={isTyping}
-                className="flex-1 resize-none outline-none px-3 py-2 max-h-40 text-gray-800 disabled:opacity-50"
-                rows={1}
-              />
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Top Header */}
+      <header className="bg-white border-b border-gray-200 shadow-sm z-20">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
               <button
-                onClick={handleSend}
-                disabled={!input.trim() || isTyping}
-                className={`p-2 rounded-xl transition-all duration-200 flex-shrink-0 ${
-                  input.trim() && !isTyping
-                    ? "bg-gray-900 text-white hover:bg-gray-800 hover:scale-105"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                <MenuIcon className="w-5 h-5 text-gray-700" />
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-2 h-2 rounded-full ${appConfig[currentApp].color}`}
+                />
+                <h1 className="text-xl font-semibold text-gray-900">
+                  {appConfig[currentApp].name}
+                </h1>
+              </div>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                 >
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
+                  <span>Switch App</span>
+                  <ChevronDownIcon className="w-4 h-4" />
+                </button>
+
+                {isDropdownOpen && (
+                  <>
+                    <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 z-30 overflow-hidden">
+                      <div className="py-1">
+                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          Switch Application
+                        </div>
+                        {(user?.assignedApps || user?.appAccess)?.map(
+                          (appId) => (
+                            <button
+                              key={appId}
+                              onClick={() => handleAppSwitch(appId)}
+                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 ${
+                                currentApp === appId
+                                  ? "bg-indigo-50 text-indigo-700 font-medium"
+                                  : "text-gray-700 hover:bg-gray-50"
+                              }`}
+                            >
+                              <div
+                                className={`w-2 h-2 rounded-full ${appConfig[appId].color}`}
+                              />
+                              {appConfig[appId].name}
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      className="fixed inset-0 z-20"
+                      onClick={() => setIsDropdownOpen(false)}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600 hidden sm:inline">
+                {user?.email}
+              </span>
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200">
+                {user?.role}
+              </span>
+              <button
+                className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
+                onClick={handleLogout}
+              >
+                <LogOutIcon className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside
+          className={`${
+            isSidebarOpen ? "w-72" : "w-0"
+          } bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden shadow-sm`}
+        >
+          <div className="p-4 border-b border-gray-100">
+            <button
+              onClick={startNewChat}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+            >
+              <PlusIcon className="w-5 h-5" />
+              <span>New chat</span>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 py-4">
+            <div className="space-y-1">
+              <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Today
+              </div>
+              {conversations
+                .filter((c) => c.date === "Today")
+                .map((conv) => (
+                  <button
+                    key={conv.id}
+                    className={`w-full text-left px-3 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 group ${
+                      conv.active
+                        ? "bg-indigo-50 text-indigo-700 font-medium"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    <MessageSquareIcon className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate text-sm">{conv.title}</span>
+                  </button>
+                ))}
+
+              <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide mt-6">
+                Yesterday
+              </div>
+              {conversations
+                .filter((c) => c.date === "Yesterday")
+                .map((conv) => (
+                  <button
+                    key={conv.id}
+                    className="w-full text-left px-3 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center gap-3 group text-gray-700"
+                  >
+                    <MessageSquareIcon className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate text-sm">{conv.title}</span>
+                  </button>
+                ))}
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-gray-100">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                <UserIcon className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate">
+                  {user?.email}
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Chat Area */}
+        <main className="flex-1 flex flex-col min-w-0 bg-white">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto px-4 py-8">
+              {showPrompts && messages.length === 1 && (
+                <div className="mb-12 animate-fadeIn">
+                  <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-4 shadow-lg">
+                      <MessageSquareIcon className="w-8 h-8 text-white" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      How can I help you today?
+                    </h2>
+                    <p className="text-gray-600">
+                      Start a conversation or try one of these prompts
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {promptCards.map((prompt, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handlePromptClick(prompt)}
+                        className="text-left p-5 rounded-xl border-2 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all duration-200 group"
+                      >
+                        <div className={`${prompt.color}`}>{prompt.icon}</div>
+                        <h3 className="font-semibold text-gray-900 mb-1">
+                          {prompt.title}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {prompt.description}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`mb-8 flex gap-4 animate-fadeIn ${
+                    message.role === "user" ? "flex-row-reverse" : ""
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${
+                      message.role === "user"
+                        ? "bg-gradient-to-br from-indigo-500 to-purple-600"
+                        : "bg-gradient-to-br from-emerald-400 to-cyan-500"
+                    }`}
+                  >
+                    {message.role === "user" ? (
+                      <UserIcon className="w-5 h-5 text-white" />
+                    ) : (
+                      <SparklesIcon className="w-5 h-5 text-white" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className={`text-sm font-semibold mb-2 text-gray-700 ${
+                        message.role === "user" ? "text-right" : ""
+                      }`}
+                    >
+                      {message.role === "user" ? "You" : "Georgia"}
+                    </div>
+                    <div
+                      className={`${
+                        message.role === "user"
+                          ? "bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 px-5 py-3 rounded-2xl inline-block float-right max-w-full"
+                          : ""
+                      }`}
+                    >
+                      <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                        {message.content}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {isTyping && (
+                <div className="mb-8 flex gap-4 animate-fadeIn">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <SparklesIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold mb-2 text-gray-700">
+                      Georgia
+                    </div>
+                    <div className="flex gap-1.5 py-3">
+                      <div
+                        className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <div
+                        className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <div
+                        className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t border-gray-200 p-4 bg-gradient-to-t from-gray-50 to-white">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex gap-3 items-end bg-white border-2 border-gray-300 rounded-2xl shadow-sm hover:shadow-md focus-within:border-indigo-400 focus-within:shadow-lg transition-all duration-200 p-2">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Message Georgia..."
+                  disabled={isTyping}
+                  className="flex-1 resize-none outline-none px-3 py-3 max-h-40 text-gray-800 placeholder-gray-400 disabled:opacity-50 bg-transparent"
+                  rows={1}
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim() || isTyping}
+                  className={`p-3 rounded-xl transition-all duration-200 flex-shrink-0 ${
+                    input.trim() && !isTyping
+                      ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105 shadow-md"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  <SendIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-xs text-center text-gray-500 mt-3">
+                Press Enter to send, Shift + Enter for new line
+              </p>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
