@@ -1,71 +1,48 @@
 "use client";
 
 /**
- * Authentication Context for App1
- * Provides authentication state and methods throughout the app
+ * Authentication Context for App2
+ * Provides authentication state and methods throughout the application
  */
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, AuthContextType } from "../lib/shared/types";
 import { authApi, AuthState } from "../lib/shared/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Verify token on mount and set up user state
+  // Initialize authentication state
   useEffect(() => {
-    const verifyUser = async () => {
+    const initAuth = async () => {
       try {
-        setIsLoading(true);
         const response = await authApi.verifyToken();
-
         if (response.success && response.data) {
-          const myData = response.data as unknown as any;
-          setUser(myData.user);
-        } else {
-          setUser(null);
+          setUser(response.data);
         }
       } catch (error) {
-        console.error("Token verification failed:", error);
-        setUser(null);
+        console.error("Auth initialization error:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    verifyUser();
+    initAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const response = await authApi.login(email, password);
-
       if (response.success && response.data) {
         setUser(response.data.user);
-
-        // Redirect to the appropriate URL
-        if (response.data.redirectUrl) {
-          window.location.href = response.data.redirectUrl;
-        }
       }
-
       return response;
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Login error:", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -73,20 +50,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = async () => {
-    console.log("🚀 ~ logout ~ logout: 444", window);
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      localStorage.clear();
       await authApi.logout();
       setUser(null);
-
-      // Redirect to login page
-      window.location.href = "http://localhost:3000/login";
     } catch (error) {
-      console.error("Logout failed:", error);
-      // Even if logout fails, clear local state
-      setUser(null);
-      window.location.href = "http://localhost:3000/login";
+      console.error("Logout error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -95,39 +64,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const verifyToken = async (): Promise<boolean> => {
     try {
       const response = await authApi.verifyToken();
-
       if (response.success && response.data) {
-        setUser(response.data);
+        // setUser(response.data);
+        const myData = response.data as unknown as any;
+        setUser(myData.user);
         return true;
-      } else {
-        // If token verification fails, try to refresh the token
-        if (!response.success && response.message?.includes("expired")) {
-          try {
-            const refreshResponse = await authApi.refreshToken();
-            if (refreshResponse.success) {
-              // Retry verification with new token
-              const retryResponse = await authApi.verifyToken();
-              if (retryResponse.success && retryResponse.data) {
-                setUser(retryResponse.data);
-                return true;
-              }
-            }
-          } catch (refreshError) {
-            console.error("Token refresh error:", refreshError);
-          }
-        }
-
-        setUser(null);
-        return false;
       }
+
+      // If token verification fails, try to refresh the token
+      if (!response.success && response.message?.includes("expired")) {
+        try {
+          const refreshResponse = await authApi.refreshToken();
+          if (refreshResponse.success) {
+            // Retry verification with new token
+            const retryResponse = await authApi.verifyToken();
+            if (retryResponse.success && retryResponse.data) {
+              setUser(retryResponse.data);
+              return true;
+            }
+          }
+        } catch (refreshError) {
+          console.error("Token refresh error:", refreshError);
+        }
+      }
+
+      return false;
     } catch (error) {
-      console.error("Token verification failed:", error);
-      setUser(null);
+      console.error("Token verification error:", error);
       return false;
     }
   };
 
-  const contextValue: AuthContextType = {
+  const value: AuthContextType = {
     user,
     isLoading,
     isAuthenticated: !!user,
@@ -136,17 +104,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     verifyToken,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth(): AuthContextType {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
-
-export { AuthContext };

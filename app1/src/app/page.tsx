@@ -5,7 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import ChatApp from "../components/ChatApp";
 
 export default function App1HomePage() {
-  const { user, isLoading } = useAuth();
+  const { user: userData, isLoading } = useAuth();
+
+  const user = userData?.user || userData;
+  console.log("🚀 ~ App1HomePage ~ user:777", user);
 
   if (isLoading) {
     return (

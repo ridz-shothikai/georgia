@@ -174,7 +174,10 @@ const LogOutIcon = ({ className }) => (
 );
 
 export default function EnhancedChatUI() {
-  const { user, isLoading, logout } = useAuth();
+  const { user: userData, logout } = useAuth();
+
+  const user = userData?.user || userData;
+
   const [messages, setMessages] = useState([
     {
       id: 1,

@@ -27,7 +27,7 @@ interface UserAppAccess {
 
 const APPLICATIONS: Application[] = [
   {
-    id: "admin-dashboard",
+    id: "dashboard",
     name: "Dashboard",
     url: "http://localhost:3000/dashboard",
     description: "Administrative interface for system management",
@@ -36,7 +36,7 @@ const APPLICATIONS: Application[] = [
     lastUpdated: new Date().toISOString(),
   },
   {
-    id: "app1",
+    id: "region14",
     name: "Region 14",
     url: "http://localhost:3000/region14",
     description: "Primary business application for core operations",
@@ -45,7 +45,7 @@ const APPLICATIONS: Application[] = [
     lastUpdated: new Date().toISOString(),
   },
   {
-    id: "app2",
+    id: "region2",
     name: "Region 2",
     url: "http://localhost:3000/region2",
     description: "Secondary application for specialized workflows",
@@ -96,7 +96,8 @@ export default function ApplicationManagement() {
 
       if (usersResponse.ok) {
         const usersData = await usersResponse.json();
-        const usersList = usersData.data || [];
+        const usersList = usersData?.data?.users || [];
+        console.log("🚀 ~ fetchApplicationData ~ usersList:", usersList);
         setUsers(usersList);
 
         // Update application user counts
@@ -211,9 +212,7 @@ export default function ApplicationManagement() {
 
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Application Management
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900">Region Management</h2>
         {/* <button
           onClick={() => setShowAccessControl(!showAccessControl)}
           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
@@ -226,7 +225,7 @@ export default function ApplicationManagement() {
       <div className="bg-white shadow rounded-lg p-4">
         <input
           type="text"
-          placeholder="Search applications..."
+          placeholder="Search regions..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
